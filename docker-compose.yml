@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  log-lottery:
+    container_name: log-lottery
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8088:80"
+    restart: unless-stopped
+    networks:
+      - log-lottery-network
+
+networks:
+  log-lottery-network:
+    driver: bridge

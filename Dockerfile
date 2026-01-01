@@ -19,22 +19,11 @@ RUN pnpm build
 # 使用 Nginx 镜像作为运行时镜像
 FROM nginx:1.26
 
-# 复制自定义 nginx 配置
-COPY --from=0 /usr/src/app/dist /usr/share/nginx/html/log-lottery
+# 复制构建产物到 nginx 根目录
+COPY --from=builder /usr/src/app/dist /usr/share/nginx/html
 
 # 创建自定义 nginx 配置
-RUN echo "server {\
-    listen 80;\
-    server_name localhost;\
-    location / {\
-        return 301 /log-lottery/;\
-    }\
-    location /log-lottery {\
-        alias /usr/share/nginx/html/log-lottery;\
-        index index.html index.htm;\
-        try_files \$uri \$uri/ /log-lottery/index.html;\
-    }\
-}" > /etc/nginx/conf.d/default.conf
+RUN echo 'server { listen 80; server_name localhost; root /usr/share/nginx/html; index index.html index.htm; location / { try_files $uri $uri/ /index.html; } location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { expires max; add_header Cache-Control "public, immutable"; } }' > /etc/nginx/conf.d/default.conf
 
 # 暴露容器的 80 端口
 EXPOSE 80
